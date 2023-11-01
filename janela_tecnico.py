@@ -3,7 +3,8 @@ from tkinter import ttk
 import sqlite3
 from tkinter import messagebox
 
-def atualizar_treeview_fechadas(tabela_treeview3):
+
+def atualizar_treeview_concluidas(tabela_treeview3):
     con = sqlite3.connect("suporte_tecnico.db")
     cursor = con.cursor()
     registros = cursor.execute("SELECT * FROM chamadas").fetchall()
@@ -11,12 +12,10 @@ def atualizar_treeview_fechadas(tabela_treeview3):
         tabela_treeview3.delete(item)
     cont = 0
     for registro in registros:
-        if registros[cont][5] == "fechada":
+        if registros[cont][5] == "concluida":
             tabela_treeview3.insert("", "end", text=registro[0], values=(registro[1], registro[2], registro[4], registro[5], registro[6]))
         cont +=1
     con.close()
-
-
 def atualizar_treeview_iniciadas(tabela_treeview2):
     con = sqlite3.connect("suporte_tecnico.db")
     cursor = con.cursor()
@@ -29,24 +28,6 @@ def atualizar_treeview_iniciadas(tabela_treeview2):
             tabela_treeview2.insert("", "end", text=registro[0], values=(registro[1], registro[2], registro[4], registro[5], registro[6]))
         cont +=1
     con.close()
-
-def fechar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3): #BUTTON
-    #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
-    item_selecionado = tabela_treeview2.selection()[0]
-    nome_solicitante = tabela_treeview2.item(item_selecionado)['values'][0]
-    departamento = tabela_treeview2.item(item_selecionado)['values'][1]
-
-    con = sqlite3.connect("suporte_tecnico.db")
-    cursor = con.cursor()
-    cursor.execute("UPDATE chamadas SET status = ? WHERE nome_solicitante = ? AND departamento = ?", ("fechada",nome_solicitante, departamento))
-    con.commit()
-    con.close()
-    
-    atualizar_treeview_abertas(tabela_treeview1)
-    atualizar_treeview_iniciadas(tabela_treeview2)
-    atualizar_treeview_fechadas(tabela_treeview3)
-
-
 def atualizar_treeview_abertas(tabela_treeview1):
     con = sqlite3.connect("suporte_tecnico.db")
     cursor = con.cursor()
@@ -59,23 +40,62 @@ def atualizar_treeview_abertas(tabela_treeview1):
             tabela_treeview1.insert("", "end", text=registro[0], values=(registro[1], registro[2], registro[4], registro[5], registro[6]))
         cont +=1
     con.close()
-    
+
+
+
+def reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3): #BUTTON
+    resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja reabrir essa chamada?")
+    if resposta:
+        #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
+        item_selecionado = tabela_treeview3.selection()[0]
+        nome_solicitante = tabela_treeview3.item(item_selecionado)['values'][0]
+        departamento = tabela_treeview3.item(item_selecionado)['values'][1]
+
+        con = sqlite3.connect("suporte_tecnico.db")
+        cursor = con.cursor()
+        cursor.execute("UPDATE chamadas SET status = ? WHERE nome_solicitante = ? AND departamento = ?", ("iniciada",nome_solicitante, departamento))
+        con.commit()
+        con.close()
+        
+        atualizar_treeview_abertas(tabela_treeview1)
+        atualizar_treeview_iniciadas(tabela_treeview2)
+        atualizar_treeview_concluidas(tabela_treeview3)
+
+def concluir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3): #BUTTON
+    resposta = messagebox.askyesno("Alerta!", "Tem certeza que essa chamada foi concluida?")
+    if resposta:
+        #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
+        item_selecionado = tabela_treeview2.selection()[0]
+        nome_solicitante = tabela_treeview2.item(item_selecionado)['values'][0]
+        departamento = tabela_treeview2.item(item_selecionado)['values'][1]
+
+        con = sqlite3.connect("suporte_tecnico.db")
+        cursor = con.cursor()
+        cursor.execute("UPDATE chamadas SET status = ? WHERE nome_solicitante = ? AND departamento = ?", ("concluida",nome_solicitante, departamento))
+        con.commit()
+        con.close()
+        
+        atualizar_treeview_abertas(tabela_treeview1)
+        atualizar_treeview_iniciadas(tabela_treeview2)
+        atualizar_treeview_concluidas(tabela_treeview3)
 
 def iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3): #BUTTON
-    #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
-    item_selecionado = tabela_treeview1.selection()[0]
-    nome_solicitante = tabela_treeview1.item(item_selecionado)['values'][0]
-    departamento = tabela_treeview1.item(item_selecionado)['values'][1]
+    resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja iniciar uma manutenção desta chamada?")
+    if resposta:
+        #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
+        item_selecionado = tabela_treeview1.selection()[0]
+        nome_solicitante = tabela_treeview1.item(item_selecionado)['values'][0]
+        departamento = tabela_treeview1.item(item_selecionado)['values'][1]
 
-    con = sqlite3.connect("suporte_tecnico.db")
-    cursor = con.cursor()
-    cursor.execute("UPDATE chamadas SET status = ? WHERE nome_solicitante = ? AND departamento = ?", ("iniciada",nome_solicitante, departamento))
-    con.commit()
-    con.close()
-    
-    atualizar_treeview_abertas(tabela_treeview1)
-    atualizar_treeview_iniciadas(tabela_treeview2)
-    atualizar_treeview_fechadas(tabela_treeview3)
+        con = sqlite3.connect("suporte_tecnico.db")
+        cursor = con.cursor()
+        cursor.execute("UPDATE chamadas SET status = ? WHERE nome_solicitante = ? AND departamento = ?", ("iniciada",nome_solicitante, departamento))
+        con.commit()
+        con.close()
+        
+        atualizar_treeview_abertas(tabela_treeview1)
+        atualizar_treeview_iniciadas(tabela_treeview2)
+        atualizar_treeview_concluidas(tabela_treeview3)
 
 
 
@@ -231,18 +251,18 @@ def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
     atualizar_treeview_iniciadas(tabela_treeview2)
     button_detalhes = tk.Button(tab2, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview2, janela_admin))
-    button_detalhes.place(relx=0.79, rely=0.88)
-    button_fechar = tk.Button(tab2, text="Fechar", bd=1, command=lambda: fechar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3))
-    button_fechar.place(relx=0.89, rely=0.88)
+    button_detalhes.place(relx=0.77, rely=0.88)
+    button_concluir = tk.Button(tab2, text="Concluir", bd=1, command=lambda: concluir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3))
+    button_concluir.place(relx=0.87, rely=0.88)
     #---------------------------------------------------------------------------------------------------
 
 
 
-    #tabela_fechada(tab_controle,frame2,janela_admin)
+    #tabela_concluida(tab_controle,frame2,janela_admin)
     #---------------------------------------------------------------------------------------------------
     tab3 = ttk.Frame(tab_controle)
-    tab_controle.add(tab3, text="Fechadas")
-    Sub_titulo = tk.Label(tab3, text="Chamadas Fechadas")
+    tab_controle.add(tab3, text="Concluidas")
+    Sub_titulo = tk.Label(tab3, text="Chamadas concluidas")
     Sub_titulo.pack()
     
     #Cirando a barra de rolagem
@@ -268,14 +288,15 @@ def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
     #Vinculando a barra de rolagem à tabela treeview
     barra_rolagem.config(command=tabela_treeview3.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
-    atualizar_treeview_fechadas(tabela_treeview3)
+    atualizar_treeview_concluidas(tabela_treeview3)
 
     button_detalhes = tk.Button(tab3, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview3, janela_admin))
-    button_detalhes.place(relx=0.79, rely=0.88)
+    button_detalhes.place(relx=0.78, rely=0.88)
+    button_reabrir = tk.Button(tab3, text="Reabrir", bd=1, command=lambda: reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3))
+    button_reabrir.place(relx=0.88, rely=0.88)
     #---------------------------------------------------------------------------------------------------
     
     janela_admin.mainloop()
 
 
-#criar_janela_admin("Joãozinho","joao@gmail.com","Programador")
-
+criar_janela_admin("Joãozinho","joao@gmail.com","Programador")

@@ -5,7 +5,7 @@ from datetime import datetime
 import chamada_sqlite #importanto o arquivo .py do SQlite
 chamada_sqlite.criar_tabelas() #chamando a função para criar tabelas data base se não existir
 import janela_chamada 
-import janela_admin
+import janela_tecnico
 
 
 
@@ -116,7 +116,7 @@ def fazer_login(email, senha):
         messagebox.showinfo("Login", "Login de Tecnico realizado com sucesso!")
         registra_historico_login(nome_tecnico, email)
         janela_inicio.destroy()
-        janela_admin.criar_janela_admin(nome_tecnico, tecnico[0][2], tecnico[0][4])
+        janela_tecnico.criar_janela_admin(nome_tecnico, tecnico[0][2], tecnico[0][4])
 
     else:
         messagebox.showerror("Erro","Email ou Senha inválido \nTente novamente")
