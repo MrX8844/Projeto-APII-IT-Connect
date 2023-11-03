@@ -44,7 +44,7 @@ def atualizar_treeview_abertas(tabela_treeview1):
 
 
 def reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico): #BUTTON
-    if tabela_treeview2.selection():
+    if tabela_treeview3.selection():
         resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja reabrir essa chamada?")
         if resposta:
             #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
@@ -55,7 +55,7 @@ def reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
             con = sqlite3.connect("suporte_tecnico.db")
             cursor = con.cursor()
             registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-            detalhes = registro[0][3]+" \n"+f"\nTécnico {nome_tecnico}: "+"Concluiu a chamada."
+            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Reabriu a chamada."
             cursor.execute("UPDATE chamadas SET status = ?, descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", ("iniciada", detalhes, nome_solicitante, departamento))
             con.commit()
             con.close()
@@ -78,7 +78,7 @@ def concluir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tec
             con = sqlite3.connect("suporte_tecnico.db")
             cursor = con.cursor()
             registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-            detalhes = registro[0][3]+" \n"+f"\nTécnico {nome_tecnico}: "+"Concluiu a chamada."
+            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Concluiu a chamada."
             cursor.execute("UPDATE chamadas SET status = ?, descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", ("concluida", detalhes, nome_solicitante, departamento))
             con.commit()
             con.close()
@@ -100,7 +100,7 @@ def iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
             con = sqlite3.connect("suporte_tecnico.db")
             cursor = con.cursor()
             registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-            detalhes = registro[0][3]+" \n"+f"\nTécnico {nome_tecnico}: "+"Iniciou a chamada."
+            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Iniciou a chamada."
             cursor.execute("UPDATE chamadas SET status = ?, descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", ("iniciada", detalhes, nome_solicitante, departamento))
             con.commit()
             con.close()
@@ -114,87 +114,122 @@ def iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
 
 
 #Buacar uma forma de coletar a informação(detalhes) do item selecionado da tabela_treeview
-def detalhes_chamada(tabela_treeview, janela_admin): #BUTTON
+def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
+    
+
     if tabela_treeview.selection():
-        janela_destalhes = tk.Toplevel(janela_admin, bg="#d3d3d3")
+        janela_destalhes = tk.Toplevel(janela_tecnico, bg="#d3d3d3")
         janela_destalhes.title("Descrição do problema")
-        #Tamanho da janela-----------------------------------------------
-        largura = 370
-        altura = 500
+
+        #Tamanho da janela
+        largura = 680
+        altura = 300
         #Resolucao do sistema
         largura_tela = janela_destalhes.winfo_screenwidth()
         altura_tela = janela_destalhes.winfo_screenheight()
-        #Posicao da janela centralizada ao do sistema--------------------
+        #Posicao da janela centralizada ao do sistema
         posx = largura_tela/2 - largura/2
         posy = altura_tela/2 - altura/2
-        #Definicoes da geometria da janela-------------------------------
+        #Definicoes da geometria da janela
         janela_destalhes.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
-        #Frame para implementar o texto
-        frame_detalhes = tk.Frame(janela_destalhes)
-        frame_detalhes.place(relx=0.05, rely=0.1 , relwidth= 0.90, relheight= 0.70)
+        
         #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
         item_selecionado = tabela_treeview.selection()[0]
         nome_solicitante = tabela_treeview.item(item_selecionado)['values'][0]
         departamento = tabela_treeview.item(item_selecionado)['values'][1]
-        #Buscar no banco de dados os detalhes, baseando-se nas variáveis já coletadas da seleção da treeview.
+
+        #Buscar no banco de dados a descrição_problema, baseando-se nas variáveis já coletadas da seleção da treeview.
         con = sqlite3.connect("suporte_tecnico.db")
         cursor = con.cursor()
         registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-        detalhes = registro[0][3]
-        #Texto com o detalhes
-        text_detalhes = tk.Label(frame_detalhes, text=detalhes, wraplength=330, justify='left')
-        text_detalhes.pack()
         con.close()
+        descrição_problema = registro[0][3]
+
+        #Separando o texto de descrição_problema por linha e atruibuindo 3 tipos de divisão
+        linhas = descrição_problema.split("\n")
+        problemas = []
+        tecnicos = []
+        observacoes = []
+        for linha in linhas:
+            if linha.startswith("Problema"):
+                problemas.append(linha)
+            elif linha.startswith("Observação"):
+                observacoes.append(linha)
+            elif linha.startswith("Técnico"):
+                tecnicos.append(linha)
+
+        button_fechar = tk.Button(janela_destalhes, text="Fechar", command=janela_destalhes.destroy, bd=1)
+        button_fechar.place(relx=0.98, rely=0.98, anchor=tk.SE)
+        
+        label_problema = tk.Label(janela_destalhes, text="Problema",bg="#d3d3d3")
+        label_problema.place(relx=0.39, rely=0.02)
+        frame_problema = tk.Frame(janela_destalhes, bd=2)
+        frame_problema.place(relx=0.01, rely=0.08 , relwidth= 0.98, relheight= 0.15)
+        label_problema = tk.Label(frame_problema, text="\n".join(problemas), justify=tk.LEFT, wraplength=400)
+        label_problema.pack()
+
+        label_observacao = tk.Label(janela_destalhes, text="Observação",bg="#d3d3d3")
+        label_observacao.place(relx=0.01, rely=0.24)
+        frame_observacao = tk.Frame(janela_destalhes, bd=2)
+        frame_observacao.place(relx=0.01, rely=0.30, relwidth= 0.58, relheight= 0.58)
+        label_observacao = tk.Label(frame_observacao, text="\n\n".join(observacoes), justify=tk.LEFT, wraplength=340)
+        label_observacao.place(x=1, y=10)
+
+        label_tecnico = tk.Label(janela_destalhes, text="Ação Realizada",bg="#d3d3d3")
+        label_tecnico.place(relx=0.61, rely=0.24)
+        frame_tecnico = tk.Frame(janela_destalhes, bd=2)
+        frame_tecnico.place(relx=0.61, rely=0.30, relwidth= 0.38, relheight= 0.58)
+        label_tecnico = tk.Label(frame_tecnico, text="\n".join(tecnicos), justify=tk.LEFT, wraplength=400)
+        label_tecnico.place(x=1,y=10)
+        
     else: 
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
 
 
-
-
-
-
-
-
-
-def adicionar_observação(tabela_treeview2, janela_admin, nome_tecnico):
+def adicionar_observação_tecnico(tabela_treeview2, janela_tecnico, nome_tecnico):
+    #função que adiciona uma observação à chamada selecionada na treeview2
     def adicionar_texto_observação(tabela_treeview2, nome_tecnico):
-        texto = str(text_observacão.get("1.0", 'end-1c'))
+        texto = text_observacao.get("1.0", 'end-1c')
 
         #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
         item_selecionado = tabela_treeview2.selection()[0]
         nome_solicitante = tabela_treeview2.item(item_selecionado)['values'][0]
         departamento = tabela_treeview2.item(item_selecionado)['values'][1]
-        #Buscar no banco de dados os detalhes, baseando-se nas variáveis já coletadas da seleção da treeview.
+
+        #Buscar no banco de dados a descricao_problema, baseando-se nas variáveis nome e departamento da seleção da treeview2.
         con = sqlite3.connect("suporte_tecnico.db")
         cursor = con.cursor()
         registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-        detalhes = registro[0][3]+"\n"+f"Técnico {nome_tecnico}: "+"Observação - "+ texto
+        descricao_problema = registro[0][3]
+        #Adicionar a observação ao final da descricao_problema
+        detalhes = descricao_problema+" \n"+f"Observação do Técnico {nome_tecnico}: "+texto
         cursor.execute("UPDATE chamadas SET descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", (detalhes, nome_solicitante, departamento))
+        con.commit()
         con.close()
-        print("texto:",texto)
-        messagebox.showinfo("Exito","A observação foi adcionada as detalhes da chamada com exito")
-
+        #Fechar a janela_observacao
+        janela_observacao.destroy()
+        messagebox.showinfo("Exito","A observação foi adcionada aos detalhes dessa chamada com exito")
 
     if tabela_treeview2.selection():
-        janela_observacão = tk.Toplevel(janela_admin, bg="#d3d3d3")
-        janela_observacão.title("Observação")
+        janela_observacao = tk.Toplevel(janela_tecnico, bg="#d3d3d3")
+        janela_observacao.title("Observação")
         #Tamanho da janela-----------------------------------------------
         largura = 500
         altura = 230
         #Resolucao do sistema
-        largura_tela = janela_observacão.winfo_screenwidth()
-        altura_tela = janela_observacão.winfo_screenheight()
+        largura_tela = janela_observacao.winfo_screenwidth()
+        altura_tela = janela_observacao.winfo_screenheight()
         #Posicao da janela centralizada ao do sistema--------------------
         posx = largura_tela/2 - largura/2
         posy = altura_tela/2 - altura/2
         #Definicoes da geometria da janela-------------------------------
-        janela_observacão.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
+        janela_observacao.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
 
-        label_insira_observacao = tk.Label(janela_observacão, text="Insira uma observação", font=("Arial", 10, "bold"), bg="#d3d3d3")
+        label_insira_observacao = tk.Label(janela_observacao, text="Insira uma observação", font=("Arial", 10, "bold"), bg="#d3d3d3")
         label_insira_observacao.place(x=6, y=10)
-        text_observacão = tk.Text(janela_observacão, width=60, height=10)
-        text_observacão.place(x=6, y=30)
-        button_adicionar = tk.Button(janela_observacão, text="Adicionar", command=lambda: adicionar_texto_observação(tabela_treeview2, nome_tecnico))
+        text_observacao = tk.Text(janela_observacao, width=60, height=10)
+        text_observacao.place(x=6, y=30)
+        button_adicionar = tk.Button(janela_observacao, text="Adicionar", command=lambda: adicionar_texto_observação(tabela_treeview2, nome_tecnico))
         button_adicionar.place(x=427, y=200)
         
     else: 
@@ -202,34 +237,33 @@ def adicionar_observação(tabela_treeview2, janela_admin, nome_tecnico):
 
 
 
-
-def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
-    janela_admin = tk.Tk()
-    janela_admin.title("Menu do Técnico")
+def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
+    janela_tecnico = tk.Tk()
+    janela_tecnico.title("Menu do Técnico")
     #Tamanho da janela ------------------------------------------------------
     largura = 650
     altura = 450
     #Resolucao do sistema ----------------------------------------------------
-    largura_tela = janela_admin.winfo_screenwidth()
-    altura_tela = janela_admin.winfo_screenheight()
+    largura_tela = janela_tecnico.winfo_screenwidth()
+    altura_tela = janela_tecnico.winfo_screenheight()
     #Posicao da janela centralizada ao do sistema -----------------------------
     posx = largura_tela/2 - largura/2
     posy = altura_tela/2 - altura/2
     #Definicoes da geometria da janela -----------------------------------------
-    janela_admin.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
+    janela_tecnico.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
 
-    fundo = tk.Frame(janela_admin, bg="#d3d3d3")
+    fundo = tk.Frame(janela_tecnico, bg="#d3d3d3")
     fundo.place(relx=0.00, rely=0.00 , relwidth= 100, relheight= 100)
 
-    frame1 = tk.Frame(janela_admin, bd=10)
+    frame1 = tk.Frame(janela_tecnico, bd=10)
     frame1.place(relx=0.01, rely=0.07 , relwidth= 0.98, relheight= 0.2)
-    frame2 = tk.Frame(janela_admin,bg="blue")
+    frame2 = tk.Frame(janela_tecnico,bg="blue")
     frame2.place(relx=0.01, rely=0.33 , relwidth= 0.98, relheight= 0.65)
 
     # Titulo -------------------------------------------------------------------
-    titulo_bemvindo = tk.Label(janela_admin, text=f"Bem Vindo {nome_tecnico}", font=("Arial", 10, "bold"), bg="#d3d3d3")
+    titulo_bemvindo = tk.Label(janela_tecnico, text=f"Bem Vindo {nome_tecnico}", font=("Arial", 10, "bold"), bg="#d3d3d3")
     titulo_bemvindo.place(relx=0.39, rely=0.00)
-    titulo_chamadas = tk.Label(janela_admin, text="CHAMADAS", font=("Arial", 9, "bold"), bg="#d3d3d3")  #fg="white"
+    titulo_chamadas = tk.Label(janela_tecnico, text="CHAMADAS", font=("Arial", 9, "bold"), bg="#d3d3d3")  #fg="white"
     titulo_chamadas.place(relx=0.44, rely=0.28)
     # Informações do Técnico -------------------------------------------------
     text_nome1 = tk.Label(frame1, text= "Nome:", font=("Arial", 10))
@@ -252,7 +286,7 @@ def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
     
 
 
-    #tabela_aberta(tab_controle,frame2,janela_admin)
+    #tabela_aberta(tab_controle,frame2,janela_tecnico)
     #---------------------------------------------------------------------------------------------------
     tab1 = ttk.Frame(tab_controle)
     tab_controle.add(tab1, text="Abertas")
@@ -281,14 +315,14 @@ def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
     barra_rolagem.config(command=tabela_treeview1.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
     atualizar_treeview_abertas(tabela_treeview1)
-    button_detalhes = tk.Button(tab1, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview1, janela_admin))
+    button_detalhes = tk.Button(tab1, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview1, janela_tecnico))
     button_detalhes.place(relx=0.79, rely=0.88)
     button_iniciar = tk.Button(tab1, text="Iniciar", bd=1, command=lambda: iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico))
     button_iniciar.place(relx=0.89, rely=0.88)
     #---------------------------------------------------------------------------------------------------
 
 
-    #tabela_iniciada(tab_controle,frame2,janela_admin)
+    #tabela_iniciada(tab_controle,frame2,janela_tecnico)
     #---------------------------------------------------------------------------------------------------
     tab2 = ttk.Frame(tab_controle)
     tab_controle.add(tab2, text="Em Andamento")
@@ -320,9 +354,9 @@ def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
 
     #label_observação = tk.Label(tab2, text="Adicionar uma observação")
     #label_observação.place(relx=0.01, rely=0.88)
-    button_observação = tk.Button(tab2, text="Adicionar uma observação", bd=1, command=lambda: adicionar_observação(tabela_treeview2, janela_admin,nome_tecnico))
+    button_observação = tk.Button(tab2, text="Adicionar uma observação", bd=1, command=lambda: adicionar_observação_tecnico(tabela_treeview2, janela_tecnico,nome_tecnico))
     button_observação.place(relx=0.01, rely=0.88)
-    button_detalhes = tk.Button(tab2, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview2, janela_admin))
+    button_detalhes = tk.Button(tab2, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview2, janela_tecnico))
     button_detalhes.place(relx=0.77, rely=0.88)
     button_concluir = tk.Button(tab2, text="Concluir", bd=1, command=lambda: concluir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico))
     button_concluir.place(relx=0.87, rely=0.88)
@@ -330,7 +364,7 @@ def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
 
 
 
-    #tabela_concluida(tab_controle,frame2,janela_admin)
+    #tabela_concluida(tab_controle,frame2,janela_tecnico)
     #---------------------------------------------------------------------------------------------------
     tab3 = ttk.Frame(tab_controle)
     tab_controle.add(tab3, text="Concluidas")
@@ -362,13 +396,13 @@ def criar_janela_admin(nome_tecnico, email_tecnico,especialidade_tecnico):
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
     atualizar_treeview_concluidas(tabela_treeview3)
 
-    button_detalhes = tk.Button(tab3, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview3, janela_admin))
+    button_detalhes = tk.Button(tab3, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview3, janela_tecnico))
     button_detalhes.place(relx=0.78, rely=0.88)
     button_reabrir = tk.Button(tab3, text="Reabrir", bd=1, command=lambda: reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico))
     button_reabrir.place(relx=0.88, rely=0.88)
     #---------------------------------------------------------------------------------------------------
     
-    janela_admin.mainloop()
+    janela_tecnico.mainloop()
 
 
-criar_janela_admin("Pedrinho","pedrinho@gmail.com","Programador")
+criar_janela_tecnico("Pedrinho","pedrinho@gmail.com","Programador")
