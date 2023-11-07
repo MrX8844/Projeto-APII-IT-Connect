@@ -118,20 +118,20 @@ def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
     
 
     if tabela_treeview.selection():
-        janela_destalhes = tk.Toplevel(janela_tecnico, bg="#d3d3d3")
-        janela_destalhes.title("Descrição do problema")
+        janela_detalhes = tk.Toplevel(janela_tecnico, bg="#d3d3d3")
+        janela_detalhes.title("Detalhes - Descrição do problema")
 
         #Tamanho da janela
         largura = 680
-        altura = 300
+        altura = 400
         #Resolucao do sistema
-        largura_tela = janela_destalhes.winfo_screenwidth()
-        altura_tela = janela_destalhes.winfo_screenheight()
+        largura_tela = janela_detalhes.winfo_screenwidth()
+        altura_tela = janela_detalhes.winfo_screenheight()
         #Posicao da janela centralizada ao do sistema
         posx = largura_tela/2 - largura/2
         posy = altura_tela/2 - altura/2
         #Definicoes da geometria da janela
-        janela_destalhes.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
+        janela_detalhes.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
         
         #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
         item_selecionado = tabela_treeview.selection()[0]
@@ -143,44 +143,59 @@ def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
         cursor = con.cursor()
         registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
         con.close()
-        descrição_problema = registro[0][3]
+        descricao_problema = registro[0][3]
 
         #Separando o texto de descrição_problema por linha e atruibuindo 3 tipos de divisão
-        linhas = descrição_problema.split("\n")
-        problemas = []
+        linhas = descricao_problema.split("\n")
+        problema = ""
         tecnicos = []
         observacoes = []
         for linha in linhas:
             if linha.startswith("Problema"):
-                problemas.append(linha)
+                    problema = linha[10:]
             elif linha.startswith("Observação"):
-                observacoes.append(linha)
+                observacoes.append(linha.split(":"))
             elif linha.startswith("Técnico"):
-                tecnicos.append(linha)
+                tecnicos.append(linha.split(":"))
+            
+        button_fechar = tk.Button(janela_detalhes, text="Fechar", command=janela_detalhes.destroy)
+        button_fechar.place(relx=0.99, rely=0.98, anchor=tk.SE)
 
-        button_fechar = tk.Button(janela_destalhes, text="Fechar", command=janela_destalhes.destroy, bd=1)
-        button_fechar.place(relx=0.98, rely=0.98, anchor=tk.SE)
-        
-        label_problema = tk.Label(janela_destalhes, text="Problema",bg="#d3d3d3")
-        label_problema.place(relx=0.39, rely=0.02)
-        frame_problema = tk.Frame(janela_destalhes, bd=2)
-        frame_problema.place(relx=0.01, rely=0.08 , relwidth= 0.98, relheight= 0.15)
-        label_problema = tk.Label(frame_problema, text="\n".join(problemas), justify=tk.LEFT, wraplength=400)
-        label_problema.pack()
+        # Frame e widgets do problema
+        frame_problema = tk.Frame(janela_detalhes, bd=1)
+        frame_problema.place(relx=0.01, rely=0.08, relwidth= 0.58, relheight= 0.35)
+        label_titulo_problema = tk.Label(janela_detalhes, text="Problema do Cliente", bg="#d3d3d3")
+        label_titulo_problema.place(relx=0.01, rely=0.02)
+        label_descricao_problema = tk.Label(frame_problema, text=f"{problema}", justify=tk.LEFT, wraplength=365)
+        label_descricao_problema.place(x=1, y=10)
 
-        label_observacao = tk.Label(janela_destalhes, text="Observação",bg="#d3d3d3")
-        label_observacao.place(relx=0.01, rely=0.24)
-        frame_observacao = tk.Frame(janela_destalhes, bd=2)
-        frame_observacao.place(relx=0.01, rely=0.30, relwidth= 0.58, relheight= 0.58)
-        label_observacao = tk.Label(frame_observacao, text="\n\n".join(observacoes), justify=tk.LEFT, wraplength=340)
-        label_observacao.place(x=1, y=10)
+        # Observação de tecnicos Treeview
+        frame_observacao = tk.Frame(janela_detalhes, bd=2)
+        frame_observacao.place(relx=0.01, rely=0.50, relwidth= 0.98, relheight= 0.40)
+        label_titulo_observacao = tk.Label(janela_detalhes, text="Observação do tecnico", bg="#d3d3d3")
+        label_titulo_observacao.place(relx=0.01, rely=0.44)
+        tree_observacao = ttk.Treeview(frame_observacao, columns=('col1', 'col2'), show='headings')
+        tree_observacao.heading('col1', text='Tecnico')
+        tree_observacao.heading('col2', text='Observação')
+        tree_observacao.column('col1', width=80)
+        tree_observacao.column('col2', width=580)
+        for observacao in observacoes:
+            tree_observacao.insert('', 'end', values=((observacao[0])[22:], observacao[1]))
+        tree_observacao.pack()
 
-        label_tecnico = tk.Label(janela_destalhes, text="Ação Realizada",bg="#d3d3d3")
-        label_tecnico.place(relx=0.61, rely=0.24)
-        frame_tecnico = tk.Frame(janela_destalhes, bd=2)
-        frame_tecnico.place(relx=0.61, rely=0.30, relwidth= 0.38, relheight= 0.58)
-        label_tecnico = tk.Label(frame_tecnico, text="\n".join(tecnicos), justify=tk.LEFT, wraplength=400)
-        label_tecnico.place(x=1,y=10)
+        # Ação de Técnicos Treeview
+        frame_acao_tecnico = tk.Frame(janela_detalhes, bd=2)
+        frame_acao_tecnico.place(relx=0.61, rely=0.08, relwidth= 0.38, relheight= 0.35)
+        label_titulo_acao_tecnico = tk.Label(janela_detalhes, text="Ação Realizada", bg="#d3d3d3")
+        label_titulo_acao_tecnico.place(relx=0.61, rely=0.02)
+        tree_acao_tecnico = ttk.Treeview(frame_acao_tecnico, columns=('col1', 'col2'), show='headings')
+        tree_acao_tecnico.heading('col1', text='Técnico')
+        tree_acao_tecnico.heading('col2', text='Ação')
+        tree_acao_tecnico.column('col1', width=80)
+        tree_acao_tecnico.column('col2', width=170)
+        for tecnico in tecnicos:
+            tree_acao_tecnico.insert('', 'end', values=((tecnico[0])[8:], tecnico[1]))
+        tree_acao_tecnico.pack()
         
     else: 
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
