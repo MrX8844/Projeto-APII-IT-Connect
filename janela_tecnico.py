@@ -174,25 +174,33 @@ def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
         frame_observacao.place(relx=0.01, rely=0.50, relwidth= 0.98, relheight= 0.40)
         label_titulo_observacao = tk.Label(janela_detalhes, text="Observação do tecnico", bg="#d3d3d3")
         label_titulo_observacao.place(relx=0.01, rely=0.44)
-        tree_observacao = ttk.Treeview(frame_observacao, columns=('col1', 'col2'), show='headings')
+        barra_rolagem_observacao = tk.Scrollbar(frame_observacao, orient="vertical")
+        barra_rolagem_observacao.place(relx=0.97, rely=0.1 , relwidth= 0.03, relheight= 0.85)
+        tree_observacao = ttk.Treeview(frame_observacao, yscrollcommand=barra_rolagem_observacao.set, columns=('col1', 'col2'), show='headings')
         tree_observacao.heading('col1', text='Tecnico')
         tree_observacao.heading('col2', text='Observação')
         tree_observacao.column('col1', width=80)
-        tree_observacao.column('col2', width=580)
+        tree_observacao.column('col2', width=520)
         for observacao in observacoes:
             tree_observacao.insert('', 'end', values=((observacao[0])[22:], observacao[1]))
         tree_observacao.pack()
+        barra_rolagem_observacao.config(command=tree_observacao.yview)
 
         # Ação de Técnicos Treeview
         frame_acao_tecnico = tk.Frame(janela_detalhes, bd=2)
         frame_acao_tecnico.place(relx=0.61, rely=0.08, relwidth= 0.38, relheight= 0.35)
         label_titulo_acao_tecnico = tk.Label(janela_detalhes, text="Ação Realizada", bg="#d3d3d3")
         label_titulo_acao_tecnico.place(relx=0.61, rely=0.02)
-        tree_acao_tecnico = ttk.Treeview(frame_acao_tecnico, columns=('col1', 'col2'), show='headings')
+        barra_rolagem_acao_tecnico = tk.Scrollbar(frame_acao_tecnico, orient="vertical")
+        barra_rolagem_acao_tecnico.place(relx=0.94, rely=0.1 , relwidth= 0.07, relheight= 0.85)
+        tree_acao_tecnico = ttk.Treeview(frame_acao_tecnico, yscrollcommand=barra_rolagem_acao_tecnico.set, columns=('col1', 'col2'), show='headings')
+        #tree_acao_tecnico.place(relx=0.2, rely=0.2 , relwidth= 0.95, relheight= 0.76)
         tree_acao_tecnico.heading('col1', text='Técnico')
         tree_acao_tecnico.heading('col2', text='Ação')
         tree_acao_tecnico.column('col1', width=80)
-        tree_acao_tecnico.column('col2', width=170)
+        tree_acao_tecnico.column('col2', width=110)
+        barra_rolagem_acao_tecnico.config(command=tree_acao_tecnico.yview)
+
         for tecnico in tecnicos:
             tree_acao_tecnico.insert('', 'end', values=((tecnico[0])[8:], tecnico[1]))
         tree_acao_tecnico.pack()
@@ -308,10 +316,10 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     Sub_titulo = tk.Label(tab1, text="Chamadas Abertas")
     Sub_titulo.pack()
     #Cirando a barra de rolagem
-    barra_rolagem = tk.Scrollbar(frame2, orient="vertical")
-    barra_rolagem.place(relx=0.96, rely=0.1 , relwidth= 0.04, relheight= 0.85)
+    barra_rolagem_tab1 = tk.Scrollbar(frame2, orient="vertical")
+    barra_rolagem_tab1.place(relx=0.96, rely=0.1 , relwidth= 0.04, relheight= 0.85)
     #Criar um treeview 
-    tabela_treeview1 = ttk.Treeview(tab1, yscrollcommand=barra_rolagem.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"))
+    tabela_treeview1 = ttk.Treeview(tab1, yscrollcommand=barra_rolagem_tab1.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"))
     tabela_treeview1.place(relx=0.01, rely=0.1 , relwidth= 0.95, relheight= 0.76)
     tabela_treeview1.column("#0", width=0, stretch=tk.NO)
     tabela_treeview1.column("#1", anchor=tk.W, width=100)
@@ -327,7 +335,7 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     tabela_treeview1.heading("#4", text="status", anchor=tk.W)
     tabela_treeview1.heading("#5", text="Data/Hora", anchor=tk.W)
     #Vinculando a barra de rolagem à tabela treeview
-    barra_rolagem.config(command=tabela_treeview1.yview)
+    barra_rolagem_tab1.config(command=tabela_treeview1.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
     atualizar_treeview_abertas(tabela_treeview1)
     button_detalhes = tk.Button(tab1, text="Detalhes", bd=1, command=lambda: detalhes_chamada(tabela_treeview1, janela_tecnico))
@@ -344,10 +352,10 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     Sub_titulo = tk.Label(tab2, text="Chamadas Iniciadas")
     Sub_titulo.pack()
     #Cirando a barra de rolagem
-    barra_rolagem = tk.Scrollbar(frame2, orient="vertical")
-    barra_rolagem.place(relx=0.96, rely=0.1 , relwidth= 0.04, relheight= 0.85)
+    barra_rolagem_tab2 = tk.Scrollbar(frame2, orient="vertical")
+    barra_rolagem_tab2.place(relx=0.96, rely=0.1 , relwidth= 0.04, relheight= 0.85)
     #Criar um treeview 
-    tabela_treeview2 = ttk.Treeview(tab2, yscrollcommand=barra_rolagem.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"))
+    tabela_treeview2 = ttk.Treeview(tab2, yscrollcommand=barra_rolagem_tab2.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"))
     tabela_treeview2.place(relx=0.01, rely=0.1 , relwidth= 0.95, relheight= 0.76)
     tabela_treeview2.column("#0", width=0, stretch=tk.NO)
     tabela_treeview2.column("#1", anchor=tk.W, width=100)
@@ -363,7 +371,7 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     tabela_treeview2.heading("#4", text="status", anchor=tk.W)
     tabela_treeview2.heading("#5", text="Data/Hora", anchor=tk.W)
     #Vinculando a barra de rolagem à tabela treeview
-    barra_rolagem.config(command=tabela_treeview2.yview)
+    barra_rolagem_tab2.config(command=tabela_treeview2.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
     atualizar_treeview_iniciadas(tabela_treeview2)
 
@@ -387,11 +395,11 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     Sub_titulo.pack()
     
     #Cirando a barra de rolagem
-    barra_rolagem = tk.Scrollbar(frame2, orient="vertical")
-    barra_rolagem.place(relx=0.96, rely=0.1 , relwidth= 0.04, relheight= 0.85)
+    barra_rolagem_tab3 = tk.Scrollbar(frame2, orient="vertical")
+    barra_rolagem_tab3.place(relx=0.96, rely=0.1 , relwidth= 0.04, relheight= 0.85)
     
     #Criar um treeview 
-    tabela_treeview3 = ttk.Treeview(tab3, yscrollcommand=barra_rolagem.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"))
+    tabela_treeview3 = ttk.Treeview(tab3, yscrollcommand=barra_rolagem_tab3.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"))
     tabela_treeview3.place(relx=0.01, rely=0.1 , relwidth= 0.95, relheight= 0.76)
     tabela_treeview3.column("#0", width=0, stretch=tk.NO)
     tabela_treeview3.column("#1", anchor=tk.W, width=100)
@@ -407,7 +415,7 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     tabela_treeview3.heading("#4", text="status", anchor=tk.W)
     tabela_treeview3.heading("#5", text="Data/Hora", anchor=tk.W)
     #Vinculando a barra de rolagem à tabela treeview
-    barra_rolagem.config(command=tabela_treeview3.yview)
+    barra_rolagem_tab3.config(command=tabela_treeview3.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
     atualizar_treeview_concluidas(tabela_treeview3)
 
