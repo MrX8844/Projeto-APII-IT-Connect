@@ -40,5 +40,15 @@ def criar_tabelas():
                 data_abertura DATE NOT NULL
                 );
                 """)
+    cursor.execute('''CREATE TABLE IF NOT EXISTS departamentos (
+                   id INTEGER PRIMARY KEY, 
+                   nome TEXT
+                   );
+                   ''')
+    cursor.execute('''CREATE TABLE IF NOT EXISTS equipamentos (
+                   id INTEGER PRIMARY KEY, 
+                   nome TEXT
+                   );
+                   ''')
     con.commit()
     con.close()
