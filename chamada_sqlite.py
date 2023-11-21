@@ -41,14 +41,14 @@ def criar_tabelas():
                 );
                 """)
     cursor.execute('''CREATE TABLE IF NOT EXISTS departamentos (
-                   id INTEGER PRIMARY KEY, 
-                   nome TEXT
-                   );
-                   ''')
+                id INTEGER PRIMARY KEY, 
+                nome TEXT
+                );
+                ''')
     cursor.execute('''CREATE TABLE IF NOT EXISTS equipamentos (
-                   id INTEGER PRIMARY KEY, 
-                   nome TEXT
-                   );
-                   ''')
+                id INTEGER PRIMARY KEY, 
+                nome TEXT
+                );
+                ''')
     con.commit()
     con.close()
