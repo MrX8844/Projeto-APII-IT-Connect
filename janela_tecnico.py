@@ -427,4 +427,4 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     janela_tecnico.mainloop()
 
 
-criar_janela_tecnico("Pedrinho","pedrinho@gmail.com","Programador")
+#criar_janela_tecnico("Pedrinho","pedrinho@gmail.com","Programador")
