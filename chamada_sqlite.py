@@ -7,6 +7,7 @@ def criar_tabelas():
                 id INTEGER PRIMARY KEY,
                 nome_solicitante TEXT,
                 departamento TEXT,
+                equipamento TEXT,
                 descricao_problema TEXT,
                 prioridade TEXT,
                 status TEXT,
@@ -16,7 +17,7 @@ def criar_tabelas():
     cursor.execute("""CREATE TABLE IF NOT EXISTS tecnicos (
                 id INTEGER PRIMARY KEY,
                 nome_tecnico TEXT,
-                email TEXT NOT NULL,
+                email TEXT UNIQUE NOT NULL,
                 senha TEXT NOT NULL,
                 especialidade TEXT,
                 disponibilidade TEXT
@@ -40,15 +41,7 @@ def criar_tabelas():
                 data_abertura DATE NOT NULL
                 );
                 """)
-    cursor.execute('''CREATE TABLE IF NOT EXISTS departamentos (
-                id INTEGER PRIMARY KEY, 
-                nome TEXT
-                );
-                ''')
-    cursor.execute('''CREATE TABLE IF NOT EXISTS equipamentos (
-                id INTEGER PRIMARY KEY, 
-                nome TEXT
-                );
-                ''')
     con.commit()
     con.close()
+
+criar_tabelas()
