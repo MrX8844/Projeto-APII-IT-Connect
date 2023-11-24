@@ -114,7 +114,6 @@ def iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
 
 #Buacar uma forma de coletar a informação(detalhes) do item selecionado da tabela_treeview
 def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
-    
 
     if tabela_treeview.selection():
         janela_detalhes = tk.Toplevel(janela_tecnico, bg="#d3d3d3")
@@ -258,8 +257,80 @@ def adicionar_observação_tecnico(tabela_treeview2, janela_tecnico, nome_tecnic
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
 
 
+#função para abrir uma topview e alterar o nome, email, senha e especialidade do tecnico no banco de dados
+def alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico):
+    
+    def alterar_dados(janela_tecnico, nome, email, senha, especialidade):
+        resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja alterar os dados? ")
+        if resposta:
 
-def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
+            if nome and email and senha and especialidade:
+                con = sqlite3.connect("suporte_tecnico.db")
+                cursor = con.cursor()
+                cursor.execute("UPDATE tecnicos SET nome_tecnico = ?, email = ?, senha = ?, especialidade = ? WHERE id = ?", (nome, email, senha, especialidade, id))
+                con.commit()
+                con.close()
+                toplevel_configuração.destroy()
+                messagebox.showinfo("Exito", "Os dados foram alterados com sucesso!")
+                toplevel_configuração.destroy()
+                janela_tecnico.destroy()
+                criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico)
+            else:
+                messagebox.showerror("Erro", "Preencha todos os campos!")
+                toplevel_configuração.destroy()
+                alterar_dados_tecnico(janela_tecnico, id)
+            
+    def volta_menu_tecnico():
+        toplevel_configuração.destroy()
+
+        
+    toplevel_configuração = tk.Toplevel(janela_tecnico, bg="#d3d3d3")
+    toplevel_configuração.title("Alterar Cadastro")
+    #Tamanho da janela-----------------------------------------------
+    largura = 400
+    altura = 200
+    #Resolucao do sistema
+    largura_tela = toplevel_configuração.winfo_screenwidth()
+    altura_tela = toplevel_configuração.winfo_screenheight()
+    #Posicao da janela centralizada ao do sistema--------------------
+    posx = largura_tela/2 - largura/2
+    posy = altura_tela/2 - altura/2
+    #Definicoes da geometria da janela-------------------------------
+    toplevel_configuração.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
+
+    label_nome = tk.Label(toplevel_configuração, text="Nome:", font=("Arial", 10, "bold"), bg="#d3d3d3")
+    label_nome.place(x=10, y=10)
+    entry_nome = tk.Entry(toplevel_configuração, width=35)
+    entry_nome.place(x=130, y=10)
+
+    label_email = tk.Label(toplevel_configuração, text="Email:", font=("Arial", 10, "bold"), bg="#d3d3d3")
+    label_email.place(x=10, y=50)
+    entry_email = tk.Entry(toplevel_configuração, width=35)
+    entry_email.place(x=130, y=50)
+
+    label_senha = tk.Label(toplevel_configuração, text="Senha:", font=("Arial", 10, "bold"), bg="#d3d3d3")
+    label_senha.place(x=10, y=90)
+    entry_senha = tk.Entry(toplevel_configuração, width=35)
+    entry_senha.place(x=130, y=90)
+
+    label_especialidade = tk.Label(toplevel_configuração, text="Especialidade:", font=("Arial", 10, "bold"), bg="#d3d3d3")
+    label_especialidade.place(x=10, y=130)
+    entry_especialidade = tk.Entry(toplevel_configuração, width=35)
+    entry_especialidade.place(x=130, y=130)
+
+    nome = entry_nome.get()
+    email = entry_email.get()
+    senha = entry_senha.get()
+    especialidade = entry_especialidade.get()
+
+    botao_alterar = tk.Button(toplevel_configuração, text="Alterar", command=lambda: alterar_dados(janela_tecnico, nome, email, senha, especialidade))
+    botao_alterar.place(x=160, y=170)
+    botao_voltar = tk.Button(toplevel_configuração, text="Fechar", command=lambda: volta_menu_tecnico())
+    botao_voltar.place(x=240, y=170)
+
+
+
+def criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico):
     janela_tecnico = tk.Tk()
     janela_tecnico.title("Menu do Técnico")
     #Tamanho da janela ------------------------------------------------------
@@ -299,14 +370,13 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
 
     imagem = tk.PhotoImage(file="imagens/botao_atualizar.png")
     imagem = imagem.subsample(16,16)
-    button_configurar = tk.Button(frame1, image=imagem, bd=1)
+    button_configurar = tk.Button(frame1, image=imagem, bd=1, command=lambda: alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico))
     button_configurar.place(relx=0.95, rely=0.5)
 
     #Tabela de controles --------------------------------------------------------
     tab_controle = ttk.Notebook(frame2)
     tab_controle.pack(expand=1, side="top",fill="both")
     
-
 
     #tabela_aberta(tab_controle,frame2,janela_tecnico)
     #---------------------------------------------------------------------------------------------------
@@ -427,4 +497,4 @@ def criar_janela_tecnico(nome_tecnico, email_tecnico,especialidade_tecnico):
     janela_tecnico.mainloop()
 
 
-#criar_janela_tecnico("Pedrinho","pedrinho@gmail.com","Programador")
+criar_janela_tecnico(2,"Pedrinho","pedrinho@gmail.com","Programador")

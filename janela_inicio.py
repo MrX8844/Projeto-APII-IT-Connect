@@ -10,7 +10,7 @@ import janela_tecnico
 
 
 # Função para abrir a janela do tecnico
-def janela_login_admin():
+def janela_login_tecnico():
     janela_login = tk.Toplevel(janela_inicio)
     janela_login.title("Login do Tecnico")
 
@@ -32,7 +32,7 @@ def janela_login_admin():
     email_entry = tk.Entry(janela_login)
     senha_label = tk.Label(janela_login, text="Senha:")
     senha_entry = tk.Entry(janela_login, show="*")
-    botao_login = tk.Button(janela_login, text="Login", command=lambda: fazer_login(email_entry.get(), senha_entry.get()))
+    botao_login = tk.Button(janela_login, text="Login", command=lambda: fazer_login(email_entry.get(), senha_entry.get(), janela_login))
     cadastrar_button = tk.Button(janela_login, text="Cadastrar", command=lambda: janela_registrar_admin())
 
     # Layout e posição dos widgets
@@ -104,7 +104,7 @@ def fazer_registro(nome_tecnico, email, senha, especialidade):
 
 
 # Função para executar o login do tecnico (a ser implementada)
-def fazer_login(email, senha):
+def fazer_login(email, senha, janela_login):
     con = sqlite3.connect("suporte_tecnico.db")
     cursor = con.cursor()
     cursor.execute("SELECT * FROM tecnicos WHERE email = ? AND senha = ?", (email, senha))
@@ -112,14 +112,21 @@ def fazer_login(email, senha):
     con.close()
 
     if tecnico:
-        nome_tecnico = tecnico[0][1].upper()
+        id = tecnico[0][0]
+        nome_tecnico = tecnico[0][1]
+        email = tecnico[0][2]
+        senha = tecnico[0][3]
+        especialidade = tecnico[0][4]
+        disponibilidade = tecnico[0][5]
         messagebox.showinfo("Login", "Login de Tecnico realizado com sucesso!")
         registra_historico_login(nome_tecnico, email)
         janela_inicio.destroy()
-        janela_tecnico.criar_janela_admin(nome_tecnico, tecnico[0][2], tecnico[0][4])
+        janela_tecnico.criar_janela_tecnico(id, nome_tecnico, email, especialidade)
 
     else:
         messagebox.showerror("Erro","Email ou Senha inválido \nTente novamente")
+        janela_login.destroy()
+        janela_login_tecnico()
 
 
 def registra_historico_login(nome_tecnico, email):
@@ -160,7 +167,7 @@ botao_chamada = tk.Button(janela_inicio, text="Fazer Nova Chamada", bg="blue", f
 botao_chamada.place(relx=0.5, rely=0.5, anchor="center")
 
 # Botão "tecnico"
-botao_admin = tk.Button(janela_inicio, text="Tecnico", command=janela_login_admin)
+botao_admin = tk.Button(janela_inicio, text="Tecnico", command=janela_login_tecnico)
 botao_admin.pack(side="bottom", anchor="se", padx=10, pady=10)
 
 janela_inicio.mainloop()

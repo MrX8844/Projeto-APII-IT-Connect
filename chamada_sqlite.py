@@ -7,11 +7,11 @@ def criar_tabelas():
                 id INTEGER PRIMARY KEY,
                 nome_solicitante TEXT,
                 departamento TEXT,
-                equipamento TEXT,
                 descricao_problema TEXT,
                 prioridade TEXT,
                 status TEXT,
-                data_abertura DATE NOT NULL
+                data_abertura DATE NOT NULL, 
+                equipamento TEXT
                 );
                 """)
     cursor.execute("""CREATE TABLE IF NOT EXISTS tecnicos (
@@ -43,5 +43,3 @@ def criar_tabelas():
                 """)
     con.commit()
     con.close()
-
-criar_tabelas()

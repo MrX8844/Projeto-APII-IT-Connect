@@ -58,13 +58,13 @@ def criar_janela_chamada():
     def exibir_equipamentos():
         conn = sqlite3.connect("suporte_tecnico.db")
         cursor  = conn.cursor()
-        cursor.execute("SELECT nome FROM equipamentos")
-        dep = cursor.fetchall()
+        cursor.execute("SELECT equipamento FROM chamadas")
+        equipamento = cursor.fetchall()
 
         listbox_equipamentos.delete(0, "end")
 
-        for deps in dep:
-            listbox_equipamentos.insert("end", f"{deps}")
+        for equipamentos in equipamento:
+            listbox_equipamentos.insert("end", f"{equipamentos}")
 
         conn.close()
 
@@ -94,13 +94,13 @@ def criar_janela_chamada():
     def exibir_departamentos(event=None):
         conn = sqlite3.connect("suporte_tecnico.db")
         cursor  = conn.cursor()
-        cursor.execute("SELECT nome FROM departamentos")
-        dep = cursor.fetchall()
+        cursor.execute("SELECT departamento FROM chamadas")
+        departamento = cursor.fetchall()
 
         listbox_departamentos.delete(0, "end")
 
-        for deps in dep:
-            listbox_departamentos.insert("end", f"{deps}")
+        for departamentos in departamento:
+            listbox_departamentos.insert("end", f"{departamentos}")
 
         conn.close()
 
@@ -163,4 +163,4 @@ def criar_janela_chamada():
 
 
 
-criar_janela_chamada()
+#criar_janela_chamada()
