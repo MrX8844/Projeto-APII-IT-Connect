@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 import sqlite3
 from tkinter import messagebox
+import datetime
 
 def atualizar_treeview_concluidas(tabela_treeview3):
     con = sqlite3.connect("suporte_tecnico.db")
@@ -43,6 +44,7 @@ def atualizar_treeview_abertas(tabela_treeview1):
 
 
 def reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico): #BUTTON
+    data_hora = (datetime.datetime.now()).strftime("%d/%m/%Y %H:%M")
     if tabela_treeview3.selection():
         resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja reabrir essa chamada?")
         if resposta:
@@ -54,7 +56,7 @@ def reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
             con = sqlite3.connect("suporte_tecnico.db")
             cursor = con.cursor()
             registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Reabriu a chamada."
+            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Reabriu a chamada: "+data_hora
             cursor.execute("UPDATE chamadas SET status = ?, descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", ("iniciada", detalhes, nome_solicitante, departamento))
             con.commit()
             con.close()
@@ -66,6 +68,7 @@ def reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
 
 def concluir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico): #BUTTON
+    data_hora = (datetime.datetime.now()).strftime("%d/%m/%Y %H:%M")
     if tabela_treeview2.selection():
         resposta = messagebox.askyesno("Alerta!", "Tem certeza que essa chamada foi concluida?")
         if resposta:
@@ -77,7 +80,7 @@ def concluir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tec
             con = sqlite3.connect("suporte_tecnico.db")
             cursor = con.cursor()
             registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Concluiu a chamada."
+            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Concluiu a chamada: "+data_hora
             cursor.execute("UPDATE chamadas SET status = ?, descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", ("concluida", detalhes, nome_solicitante, departamento))
             con.commit()
             con.close()
@@ -89,6 +92,7 @@ def concluir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tec
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
 
 def iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico): #BUTTON
+    data_hora = (datetime.datetime.now()).strftime("%d/%m/%Y %H:%M")
     if tabela_treeview1.selection():
         resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja iniciar uma manutenção desta chamada?")
         if resposta:
@@ -99,7 +103,7 @@ def iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
             con = sqlite3.connect("suporte_tecnico.db")
             cursor = con.cursor()
             registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
-            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Iniciou a chamada."
+            detalhes = registro[0][3]+" \n"+f"Técnico {nome_tecnico}: "+"Iniciou a chamada: "+data_hora
             cursor.execute("UPDATE chamadas SET status = ?, descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", ("iniciada", detalhes, nome_solicitante, departamento))
             con.commit()
             con.close()
@@ -111,16 +115,16 @@ def iniciar_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecn
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
 
 
-
-#Buacar uma forma de coletar a informação(detalhes) do item selecionado da tabela_treeview
 def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
 
     if tabela_treeview.selection():
-        janela_detalhes = tk.Toplevel(janela_tecnico, bg="#d3d3d3")
+        janela_detalhes = tk.Tk()
+        janela_detalhes.geometry("680x400")
+        janela_detalhes.config(bg="#d3d3d3")
         janela_detalhes.title("Detalhes - Descrição do problema")
 
         #Tamanho da janela
-        largura = 680
+        largura = 750
         altura = 400
         #Resolucao do sistema
         largura_tela = janela_detalhes.winfo_screenwidth()
@@ -130,7 +134,7 @@ def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
         posy = altura_tela/2 - altura/2
         #Definicoes da geometria da janela
         janela_detalhes.geometry("%dx%d+%d+%d"% (largura, altura, posx, posy))
-        
+
         #Atribuir a variavel nome e departamento, selecionadas na treeview, às suas variáveis.
         item_selecionado = tabela_treeview.selection()[0]
         nome_solicitante = tabela_treeview.item(item_selecionado)['values'][0]
@@ -155,56 +159,61 @@ def detalhes_chamada(tabela_treeview, janela_tecnico): #BUTTON
                 observacoes.append(linha.split(":"))
             elif linha.startswith("Técnico"):
                 tecnicos.append(linha.split(":"))
-            
+
+
         button_fechar = tk.Button(janela_detalhes, text="Fechar", command=janela_detalhes.destroy)
         button_fechar.place(relx=0.99, rely=0.98, anchor=tk.SE)
 
-        # Frame e widgets do problema
-        frame_problema = tk.Frame(janela_detalhes, bd=1)
-        frame_problema.place(relx=0.01, rely=0.08, relwidth= 0.58, relheight= 0.35)
-        label_titulo_problema = tk.Label(janela_detalhes, text="Problema do Cliente", bg="#d3d3d3")
+        # Frame e widgets do problema 
+        frame_problema = tk.Frame(janela_detalhes, bg="#ffffff")
+        frame_problema.place(relx=0.01, rely=0.08, relwidth= 0.42, relheight= 0.35)
+        label_titulo_problema = tk.Label(janela_detalhes, text=f"Problema do(a) {nome_solicitante}", bg="#d3d3d3", font=("Arial", 10, "bold"))
         label_titulo_problema.place(relx=0.01, rely=0.02)
-        label_descricao_problema = tk.Label(frame_problema, text=f"{problema}", justify=tk.LEFT, wraplength=365)
-        label_descricao_problema.place(x=1, y=10)
+        label_descricao_problema = tk.Label(frame_problema, text=f"{problema}", justify=tk.LEFT, wraplength=275, font=("Arial", 10), bg="#ffffff")
+        label_descricao_problema.place(x=3, y=10)
+
+        # Ação de Técnicos Treeview  
+        frame_acao_tecnico = tk.Frame(janela_detalhes, bg="#d3d3d3")
+        frame_acao_tecnico.place(relx=0.45, rely=0.08, relwidth= 0.54, relheight= 0.35)
+        titulo_acao_tecnico = tk.Label(janela_detalhes, text="Ações Realizada", bg="#d3d3d3", font=("Arial", 10, "bold"))
+        titulo_acao_tecnico.place(relx=0.61, rely=0.02)
+        barra_rolagem_acao_tecnico = tk.Scrollbar(frame_acao_tecnico, orient="vertical")
+        barra_rolagem_acao_tecnico.place(relx=0.95, rely=0 , relwidth= 0.05, relheight= 1)
+        tree_acao_tecnico = ttk.Treeview(frame_acao_tecnico, yscrollcommand=barra_rolagem_acao_tecnico.set, columns=('col1', 'col2', 'col3'), show='headings')
+        tree_acao_tecnico.heading('col1', text='Técnico')
+        tree_acao_tecnico.heading('col2', text='Ação')
+        tree_acao_tecnico.heading('col3', text='Horario')
+        tree_acao_tecnico.column('col1', width=70)
+        tree_acao_tecnico.column('col2', width=120)
+        tree_acao_tecnico.column('col3', width=100)
+        for tecnico in tecnicos:
+            tree_acao_tecnico.insert('', 'end', values=((tecnico[0])[8:], tecnico[1], (tecnico[2]+":"+tecnico[3])))
+        tree_acao_tecnico.place(relx=0, rely=0 , relwidth= 0.95, relheight= 1)
+
+        barra_rolagem_acao_tecnico.config(command=tree_acao_tecnico.yview)
 
         # Observação de tecnicos Treeview
-        frame_observacao = tk.Frame(janela_detalhes, bd=2)
+        frame_observacao = tk.Frame(janela_detalhes, bg="#ffffff")
         frame_observacao.place(relx=0.01, rely=0.50, relwidth= 0.98, relheight= 0.40)
-        label_titulo_observacao = tk.Label(janela_detalhes, text="Observação do tecnico", bg="#d3d3d3")
-        label_titulo_observacao.place(relx=0.01, rely=0.44)
+        titulo_observacao = tk.Label(janela_detalhes, text="Observação do tecnico", bg="#d3d3d3", font=("Arial", 10, "bold"))
+        titulo_observacao.place(relx=0.01, rely=0.44)
         barra_rolagem_observacao = tk.Scrollbar(frame_observacao, orient="vertical")
-        barra_rolagem_observacao.place(relx=0.97, rely=0.1 , relwidth= 0.03, relheight= 0.85)
+        barra_rolagem_observacao.place(relx=0.97, rely=0 , relwidth= 0.03, relheight= 1)
         tree_observacao = ttk.Treeview(frame_observacao, yscrollcommand=barra_rolagem_observacao.set, columns=('col1', 'col2'), show='headings')
         tree_observacao.heading('col1', text='Tecnico')
         tree_observacao.heading('col2', text='Observação')
-        tree_observacao.column('col1', width=80)
-        tree_observacao.column('col2', width=520)
+        tree_observacao.column('col1', width=3)
+        tree_observacao.column('col2', width=500)
         for observacao in observacoes:
             tree_observacao.insert('', 'end', values=((observacao[0])[22:], observacao[1]))
-        tree_observacao.pack()
+        tree_observacao.place(relx=0, rely=0 , relwidth= 0.97, relheight= 1)
         barra_rolagem_observacao.config(command=tree_observacao.yview)
 
-        # Ação de Técnicos Treeview
-        frame_acao_tecnico = tk.Frame(janela_detalhes, bd=2)
-        frame_acao_tecnico.place(relx=0.61, rely=0.08, relwidth= 0.38, relheight= 0.35)
-        label_titulo_acao_tecnico = tk.Label(janela_detalhes, text="Ação Realizada", bg="#d3d3d3")
-        label_titulo_acao_tecnico.place(relx=0.61, rely=0.02)
-        barra_rolagem_acao_tecnico = tk.Scrollbar(frame_acao_tecnico, orient="vertical")
-        barra_rolagem_acao_tecnico.place(relx=0.94, rely=0.1 , relwidth= 0.07, relheight= 0.85)
-        tree_acao_tecnico = ttk.Treeview(frame_acao_tecnico, yscrollcommand=barra_rolagem_acao_tecnico.set, columns=('col1', 'col2'), show='headings')
-        #tree_acao_tecnico.place(relx=0.2, rely=0.2 , relwidth= 0.95, relheight= 0.76)
-        tree_acao_tecnico.heading('col1', text='Técnico')
-        tree_acao_tecnico.heading('col2', text='Ação')
-        tree_acao_tecnico.column('col1', width=80)
-        tree_acao_tecnico.column('col2', width=110)
-        barra_rolagem_acao_tecnico.config(command=tree_acao_tecnico.yview)
-
-        for tecnico in tecnicos:
-            tree_acao_tecnico.insert('', 'end', values=((tecnico[0])[8:], tecnico[1]))
-        tree_acao_tecnico.pack()
-        
+        janela_detalhes.mainloop()
     else: 
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
+    
+
 
 
 def adicionar_observação_tecnico(tabela_treeview2, janela_tecnico, nome_tecnico):
@@ -217,13 +226,15 @@ def adicionar_observação_tecnico(tabela_treeview2, janela_tecnico, nome_tecnic
         nome_solicitante = tabela_treeview2.item(item_selecionado)['values'][0]
         departamento = tabela_treeview2.item(item_selecionado)['values'][1]
 
+        data_hora = (datetime.datetime.now()).strftime("%d/%m/%Y %H:%M")
+
         #Buscar no banco de dados a descricao_problema, baseando-se nas variáveis nome e departamento da seleção da treeview2.
         con = sqlite3.connect("suporte_tecnico.db")
         cursor = con.cursor()
         registro = cursor.execute("SELECT * FROM chamadas WHERE nome_solicitante = ? AND departamento = ?", (nome_solicitante, departamento)).fetchall()
         descricao_problema = registro[0][3]
         #Adicionar a observação ao final da descricao_problema
-        detalhes = descricao_problema+" \n"+f"Observação do Técnico {nome_tecnico}: "+texto
+        detalhes = descricao_problema+" \n"+f"Observação do Técnico {nome_tecnico}: "+texto+f"\nTécnico {nome_tecnico}: Fez uma observação: "+data_hora
         cursor.execute("UPDATE chamadas SET descricao_problema = ? WHERE nome_solicitante = ? AND departamento = ?", (detalhes, nome_solicitante, departamento))
         con.commit()
         con.close()
@@ -257,14 +268,17 @@ def adicionar_observação_tecnico(tabela_treeview2, janela_tecnico, nome_tecnic
         messagebox.showerror("Erro", "Nenhum item foi selecionado!")
 
 
-#função para abrir uma topview e alterar o nome, email, senha e especialidade do tecnico no banco de dados
 def alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico):
     
-    def alterar_dados(janela_tecnico, nome, email, senha, especialidade):
-        resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja alterar os dados? ")
-        if resposta:
+    def alterar_dados(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico):
+        nome = entry_nome.get()
+        email = entry_email.get()
+        senha = entry_senha.get()
+        especialidade = entry_especialidade.get()
 
-            if nome and email and senha and especialidade:
+        if nome and email and senha and especialidade:
+            resposta = messagebox.askyesno("Alerta!", "Tem certeza que deseja alterar os dados? ")
+            if resposta:
                 con = sqlite3.connect("suporte_tecnico.db")
                 cursor = con.cursor()
                 cursor.execute("UPDATE tecnicos SET nome_tecnico = ?, email = ?, senha = ?, especialidade = ? WHERE id = ?", (nome, email, senha, especialidade, id))
@@ -274,11 +288,11 @@ def alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especi
                 messagebox.showinfo("Exito", "Os dados foram alterados com sucesso!")
                 toplevel_configuração.destroy()
                 janela_tecnico.destroy()
-                criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico)
-            else:
-                messagebox.showerror("Erro", "Preencha todos os campos!")
-                toplevel_configuração.destroy()
-                alterar_dados_tecnico(janela_tecnico, id)
+                criar_janela_tecnico(id, nome, email,especialidade)
+        else:
+            messagebox.showerror("Erro", "Preencha todos os campos!")
+            toplevel_configuração.destroy()
+            alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico)
             
     def volta_menu_tecnico():
         toplevel_configuração.destroy()
@@ -318,12 +332,8 @@ def alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especi
     entry_especialidade = tk.Entry(toplevel_configuração, width=35)
     entry_especialidade.place(x=130, y=130)
 
-    nome = entry_nome.get()
-    email = entry_email.get()
-    senha = entry_senha.get()
-    especialidade = entry_especialidade.get()
 
-    botao_alterar = tk.Button(toplevel_configuração, text="Alterar", command=lambda: alterar_dados(janela_tecnico, nome, email, senha, especialidade))
+    botao_alterar = tk.Button(toplevel_configuração, text="Alterar", command=lambda: alterar_dados(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico))
     botao_alterar.place(x=160, y=170)
     botao_voltar = tk.Button(toplevel_configuração, text="Fechar", command=lambda: volta_menu_tecnico())
     botao_voltar.place(x=240, y=170)
@@ -349,32 +359,46 @@ def criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico):
     fundo.place(relx=0.00, rely=0.00 , relwidth= 100, relheight= 100)
 
     frame1 = tk.Frame(janela_tecnico, bd=10)
-    frame1.place(relx=0.01, rely=0.07 , relwidth= 0.98, relheight= 0.2)
+    frame1.place(relx=0.01, rely=0.09 , relwidth= 0.98, relheight= 0.2)
     frame2 = tk.Frame(janela_tecnico,bg="blue")
     frame2.place(relx=0.01, rely=0.33 , relwidth= 0.98, relheight= 0.65)
 
     # Titulo -------------------------------------------------------------------
-    titulo_bemvindo = tk.Label(janela_tecnico, text=f"Bem Vindo {nome_tecnico}", font=("Arial", 10, "bold"), bg="#d3d3d3")
-    titulo_bemvindo.place(relx=0.39, rely=0.00)
+    titulo_bemvindo = tk.Label(janela_tecnico, text=f"BEM VINDO {(nome_tecnico).upper()}", font=("Arial", 12, "bold"), bg="#d3d3d3")
+    titulo_bemvindo.place(relx=0.36, rely=0.03)
     titulo_chamadas = tk.Label(janela_tecnico, text="CHAMADAS", font=("Arial", 9, "bold"), bg="#d3d3d3")  #fg="white"
-    titulo_chamadas.place(relx=0.44, rely=0.28)
+    titulo_chamadas.place(relx=0.44, rely=0.29)
     # Informações do Técnico -------------------------------------------------
-    text_nome1 = tk.Label(frame1, text= "Nome:", font=("Arial", 10))
+    text_nome1 = tk.Label(frame1, text= "Nome:", font=("Arial", 10, "bold"))
     text_nome1.place(relx=0.01, rely=0.01)
     text_nome2 = tk.Label(frame1, text= f"{nome_tecnico}", font=("Arial", 10))
     text_nome2.place(relx=0.08, rely=0.01)
-    text_email = tk.Label(frame1, text= f"Email: {email_tecnico}", font=("Arial", 10))
+    text_email = tk.Label(frame1, text= "Email:", font=("Arial", 10, "bold"))
     text_email.place(relx=0.01, rely=0.36)
-    text_especialidade = tk.Label(frame1, text= f"Especialidade: {especialidade_tecnico}", font=("Arial", 10))
+    text_email2 = tk.Label(frame1, text= f"{email_tecnico}", font=("Arial", 10))
+    text_email2.place(relx=0.08, rely=0.36)
+    text_especialidade = tk.Label(frame1, text= "Especialidade:", font=("Arial", 10, "bold"))
     text_especialidade.place(relx=0.01, rely=0.70)
+    text_especialidade2 = tk.Label(frame1, text= f"{especialidade_tecnico}", font=("Arial", 10))
+    text_especialidade2.place(relx=0.17, rely=0.70)
 
-    imagem = tk.PhotoImage(file="imagens/botao_atualizar.png")
-    imagem = imagem.subsample(16,16)
-    button_configurar = tk.Button(frame1, image=imagem, bd=1, command=lambda: alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico))
-    button_configurar.place(relx=0.95, rely=0.5)
+    button_configurar = tk.Button(frame1, text= "Configurações", bd=1, command=lambda: alterar_dados_tecnico(janela_tecnico, id, nome_tecnico, email_tecnico,especialidade_tecnico))
+    button_configurar.place(relx=0.80, rely=0.68)
+    button_sair = tk.Button(frame1, text="Sair", bd=1, command=lambda: sair_tecnico(janela_tecnico))
+    button_sair.place(relx=0.95, rely=0.68)
+    #função para fechar janela tecnico
+    def sair_tecnico(janela_tecnico):
+        janela_tecnico.destroy()
+        import Janela_Inicial
+        Janela_Inicial.main()
+
 
     #Tabela de controles --------------------------------------------------------
-    tab_controle = ttk.Notebook(frame2)
+    style = ttk.Style()
+    style.configure("Custom.TNotebook", background="#d3d3d3")
+
+
+    tab_controle = ttk.Notebook(frame2, style="Custom.TNotebook")
     tab_controle.pack(expand=1, side="top",fill="both")
     
 
@@ -388,7 +412,7 @@ def criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico):
     barra_rolagem_tab1 = tk.Scrollbar(frame2, orient="vertical")
     barra_rolagem_tab1.place(relx=0.96, rely=0.1 , relwidth= 0.04, relheight= 0.85)
     #Criar um treeview 
-    tabela_treeview1 = ttk.Treeview(tab1, yscrollcommand=barra_rolagem_tab1.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"))
+    tabela_treeview1 = ttk.Treeview(tab1, yscrollcommand=barra_rolagem_tab1.set, columns=("nome_solicitante", "departamento", "Prioridade", "status", "data_abertura/Hora"), show='headings')
     tabela_treeview1.place(relx=0.01, rely=0.1 , relwidth= 0.95, relheight= 0.76)
     tabela_treeview1.column("#0", width=0, stretch=tk.NO)
     tabela_treeview1.column("#1", anchor=tk.W, width=100)
@@ -398,11 +422,11 @@ def criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico):
     tabela_treeview1.column("#5", anchor=tk.W, width=180)
     # Criar os cabeçalhos das colunas 
     tabela_treeview1.heading("#0", text="", anchor=tk.W)
-    tabela_treeview1.heading("#1", text="Nome", anchor=tk.W)
-    tabela_treeview1.heading("#2", text="departamento", anchor=tk.W)
-    tabela_treeview1.heading("#3", text="Prioridade", anchor=tk.W)
-    tabela_treeview1.heading("#4", text="status", anchor=tk.W)
-    tabela_treeview1.heading("#5", text="Data/Hora", anchor=tk.W)
+    tabela_treeview1.heading("#1", text="NOME", anchor=tk.W)
+    tabela_treeview1.heading("#2", text="DEPARTAMENTO", anchor=tk.W)
+    tabela_treeview1.heading("#3", text="PRIORIDADE", anchor=tk.W)
+    tabela_treeview1.heading("#4", text="STATUS", anchor=tk.W)
+    tabela_treeview1.heading("#5", text="DATA/HORA", anchor=tk.W)
     #Vinculando a barra de rolagem à tabela treeview
     barra_rolagem_tab1.config(command=tabela_treeview1.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
@@ -434,11 +458,11 @@ def criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico):
     tabela_treeview2.column("#5", anchor=tk.W, width=180)
     # Criar os cabeçalhos das colunas 
     tabela_treeview2.heading("#0", text="", anchor=tk.W)
-    tabela_treeview2.heading("#1", text="Nome", anchor=tk.W)
-    tabela_treeview2.heading("#2", text="departamento", anchor=tk.W)
-    tabela_treeview2.heading("#3", text="Prioridade", anchor=tk.W)
-    tabela_treeview2.heading("#4", text="status", anchor=tk.W)
-    tabela_treeview2.heading("#5", text="Data/Hora", anchor=tk.W)
+    tabela_treeview2.heading("#1", text="NOME", anchor=tk.W)
+    tabela_treeview2.heading("#2", text="DEPARTAMENTO", anchor=tk.W)
+    tabela_treeview2.heading("#3", text="PRIORIDADE", anchor=tk.W)
+    tabela_treeview2.heading("#4", text="STATUS", anchor=tk.W)
+    tabela_treeview2.heading("#5", text="DATA/HORA", anchor=tk.W)
     #Vinculando a barra de rolagem à tabela treeview
     barra_rolagem_tab2.config(command=tabela_treeview2.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
@@ -478,11 +502,11 @@ def criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico):
     tabela_treeview3.column("#5", anchor=tk.W, width=180)
     # Criar os cabeçalhos das colunas 
     tabela_treeview3.heading("#0", text="", anchor=tk.W)
-    tabela_treeview3.heading("#1", text="Nome", anchor=tk.W)
-    tabela_treeview3.heading("#2", text="departamento", anchor=tk.W)
-    tabela_treeview3.heading("#3", text="Prioridade", anchor=tk.W)
-    tabela_treeview3.heading("#4", text="status", anchor=tk.W)
-    tabela_treeview3.heading("#5", text="Data/Hora", anchor=tk.W)
+    tabela_treeview3.heading("#1", text="NOME", anchor=tk.W)
+    tabela_treeview3.heading("#2", text="DEPARTAMENTO", anchor=tk.W)
+    tabela_treeview3.heading("#3", text="PRIORIDADE", anchor=tk.W)
+    tabela_treeview3.heading("#4", text="STATUS", anchor=tk.W)
+    tabela_treeview3.heading("#5", text="DATA/HORA", anchor=tk.W)
     #Vinculando a barra de rolagem à tabela treeview
     barra_rolagem_tab3.config(command=tabela_treeview3.yview)
     #Chamar função para inserir e atualizar as informações na tabview-01 (abertas)
@@ -492,7 +516,6 @@ def criar_janela_tecnico(id, nome_tecnico, email_tecnico,especialidade_tecnico):
     button_detalhes.place(relx=0.78, rely=0.88)
     button_reabrir = tk.Button(tab3, text="Reabrir", bd=1, command=lambda: reabrir_chamada(tabela_treeview1,tabela_treeview2,tabela_treeview3,nome_tecnico))
     button_reabrir.place(relx=0.88, rely=0.88)
-    #---------------------------------------------------------------------------------------------------
     
     janela_tecnico.mainloop()
 
