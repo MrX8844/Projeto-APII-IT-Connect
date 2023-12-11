@@ -5,6 +5,7 @@ import datetime
 from time import strftime
 from tkinter import messagebox
 import Janela_Inicial
+from plyer import notification
 
 def criar_janela_chamada():
     #  Criandp janela
@@ -19,6 +20,7 @@ def criar_janela_chamada():
     #Resolucao do sistema
     largura_tela = janela_chamada.winfo_screenwidth()
     altura_tela = janela_chamada.winfo_screenheight()
+    janela_chamada.resizable(width=False, height=False)
     #Posicao da janela centralizada ao do sistema
     posx = largura_tela/2 - largura/2
     posy = altura_tela/2 - altura/2
@@ -145,9 +147,9 @@ def criar_janela_chamada():
     var = tk.StringVar()
 
     # Cria os radio buttons
-    opcao1 = tk.Radiobutton(urgencia_choices_frame, text="Alto", variable=var, value="alta", command=mostrar_opcao, background="#D3D3D3")
-    opcao2 = tk.Radiobutton(urgencia_choices_frame, text="Médio", variable=var, value="media", command=mostrar_opcao, background="#D3D3D3")
-    opcao3 = tk.Radiobutton(urgencia_choices_frame, text="Baixo", variable=var, value="baixa", command=mostrar_opcao, background="#D3D3D3")
+    opcao1 = tk.Radiobutton(urgencia_choices_frame, text="Alto", variable=var, value="Alta", command=mostrar_opcao, background="#D3D3D3")
+    opcao2 = tk.Radiobutton(urgencia_choices_frame, text="Médio", variable=var, value="Média", command=mostrar_opcao, background="#D3D3D3")
+    opcao3 = tk.Radiobutton(urgencia_choices_frame, text="Baixo", variable=var, value="Baixa", command=mostrar_opcao, background="#D3D3D3")
 
     # Coloca os radio buttons na janela
     opcao1.grid(row=0, column=0, sticky='w')
@@ -186,7 +188,15 @@ def criar_janela_chamada():
         conn.commit()
         conn.close()
         messagebox.showinfo("Chamada enviada", "Sua chamada foi enviada com sucesso!")
-        janela_chamada.destroy()
+
+        caminho_imagem = 'imagens\\icon.ico'
+        notification.notify(
+            title=('IT Connect Notificação!'),
+            message=('Atenção! Uma nova chamada foi registrada!'),
+            app_icon=caminho_imagem,
+            timeout=10
+        )
+        voltar_janela_inicial()
 
     
     # Botão de envio da mensagem
